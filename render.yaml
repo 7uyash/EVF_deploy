@@ -1,0 +1,29 @@
+services:
+  # Backend Service
+  - type: web
+    name: email-verifier-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: ENABLE_INTERNET_CHECKS
+        value: true
+      - key: ENABLE_HIBP
+        value: true
+    healthCheckPath: /
+
+  # Frontend Service (Static Site)
+  - type: web
+    name: email-verifier-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: email-verifier-backend
+          property: host
+
